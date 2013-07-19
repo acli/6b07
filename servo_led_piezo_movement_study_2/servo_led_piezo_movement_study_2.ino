@@ -17,7 +17,7 @@ const int servo_low = 0;
 const int servo_high = 80;
 
 const float one_second = 1000000.0;
-float tempo = 120.0;
+float tempo = 60.0;
 
 // frequencies from http://www.phy.mtu.edu/~suits/notefreqs.html
 #define b3 246.94
@@ -34,6 +34,22 @@ float tempo = 120.0;
 #define ais4 466.16
 #define b4 493.88
 #define c5 523.25
+
+#define hz1 440.00
+#define dl1 469.86
+#define dc1 495.00
+#define jz1 528.64
+#define gx1 556.88
+#define zl1 594.39
+#define rb1 626.48
+#define lz1 660.00
+#define yz1 704.79
+#define nl1 742.50
+#define wy1 792.86
+#define yz2 835.31
+
+#define SCALE 12
+int scale[SCALE] = {hz1, dl1, dc1, jz1, gx1, zl1, rb1, lz1, yz1, nl1, wy1, yz2};
 
 Servo myservo;  // create servo object to control a servo 
 
@@ -65,9 +81,6 @@ void do_servo_action () {
   static int dir = 1;
   int light_level = analogRead(ldr_pin);
   int rate = light_level/105;
-  if (random(2)) {
-    digitalWrite(speaker_pin, HIGH);
-  }
   myservo.write(j);
   if (dir > 0) {
     j += dir*rate;
@@ -82,7 +95,6 @@ void do_servo_action () {
       dir = +1;
     }
   }
-  digitalWrite(speaker_pin, LOW);
 }
 
 void do_led_action () {
@@ -102,9 +114,24 @@ void do_led_action () {
   }
 }
 
+void make_random_sound() {
+  static int i;
+  static int j = 440;
+  make_tone(j, 0.01);
+  i += 1;
+  i %= SCALE;
+  j += random(-16, 16);
+  if (j < 440) {
+    j = 440;
+  } else if (j > 1000) {
+    j = 1000;
+  }
+}
+
 void loop() 
 {
   do_servo_action();
   do_led_action();
-  delay(10);
-} 
+  make_random_sound();
+  //delay(10);
+}
