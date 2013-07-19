@@ -117,14 +117,25 @@ void do_led_action () {
 void make_random_sound() {
   static int i;
   static int j = 440;
-  make_tone(j, 0.01);
-  i += 1;
-  i %= SCALE;
-  j += random(-16, 16);
-  if (j < 440) {
-    j = 440;
-  } else if (j > 1000) {
-    j = 1000;
+  static int sound_on = 0;
+  static unsigned long last_sound_toggle;
+  if (sound_on) {
+    make_tone(j, 0.01);
+    i += 1;
+    i %= SCALE;
+    j += random(-16, 16);
+    if (j < 440) {
+      j = 440;
+    } else if (j > 1000) {
+      j = 1000;
+    }
+  } else {
+    delay(10);
+  }
+  if (random(100) < 1 &&
+  millis() - last_sound_toggle > 5) {
+    sound_on = !sound_on;
+    last_sound_toggle = millis();
   }
 }
 
@@ -133,5 +144,4 @@ void loop()
   do_servo_action();
   do_led_action();
   make_random_sound();
-  //delay(10);
 }
