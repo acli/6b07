@@ -6,6 +6,9 @@
 // +5V to 1kΩ, (1kΩ, LDR) to signal, LDR to GND
 // http://hobbybotics.com/tutorials/tutorial-use-a-light-dependent-resistor-ldr-to-measure-light-levels/
 
+// LDR values are low = light, high = dark
+// The large LDR gives readings from say 80 to 200
+
 #include <Servo.h> 
 
 const int ldr_pin = A0;
@@ -59,6 +62,7 @@ void setup()
   pinMode(led_pin, OUTPUT);
   pinMode(speaker_pin, OUTPUT);
   myservo.attach(servo_pin); 
+  Serial.begin(9600);
 } 
 
 void make_tone(float f, float len) {
@@ -81,7 +85,8 @@ void do_servo_action () {
   static int dir = 1;
   int light_level = analogRead(ldr_pin);
   int rate = light_level/105;
-  rate=random(0, 2);
+  Serial.println(light_level);
+  //rate=10;//random(0, 2);
   myservo.write(j);
   if (dir > 0) {
     j += dir*rate;
@@ -133,8 +138,7 @@ void make_random_sound() {
   } else {
     delay(10);
   }
-  if (random(100) < 1000 &&
-  millis() - last_sound_toggle > 5) {
+  if (random(100) < 1000 && millis() - last_sound_toggle > 5) {
     sound_on = !sound_on;
     last_sound_toggle = millis();
   }
@@ -173,5 +177,5 @@ void loop()
   do_servo_action();
   do_led_action();
   //make_random_sound();
-  make_random_note();
+  //make_random_note();
 }
