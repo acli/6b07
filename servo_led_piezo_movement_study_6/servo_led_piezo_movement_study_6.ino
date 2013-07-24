@@ -81,23 +81,28 @@ void make_tone(float f, float len) {
 }
 
 void do_servo_action () {
-  static int j;
+  static float j0 = 0;
+  static int j = 0;
+  static int j_last;
   static int dir = 1;
   int light_level = analogRead(ldr_pin);
-  int rate = light_level/105;
-  Serial.println(light_level);
-  //rate=10;//random(0, 2);
-  myservo.write(j);
+  float rate = pow(light_level, 1.414)/2000.0;
+  Serial.println(light_level); Serial.print(" "); Serial.println(sqrt(light_level));
+  j = int(j0);
+  if (j != j_last) {
+    myservo.write(j);
+    j_last = j;
+  }
   if (dir > 0) {
-    j += dir*rate;
-    if (j > servo_high) {
-      j = servo_high;
+    j0 += dir*rate;
+    if (j0 > servo_high) {
+      j0 = servo_high;
       dir = -1;
     }
   } else {
-    j += dir*rate;
-    if (j < servo_low) {
-      j = servo_low;
+    j0 += dir*rate;
+    if (j0 < servo_low) {
+      j0 = servo_low;
       dir = +1;
     }
   }
