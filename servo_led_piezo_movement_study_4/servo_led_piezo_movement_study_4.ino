@@ -81,6 +81,7 @@ void do_servo_action () {
   static int dir = 1;
   int light_level = analogRead(ldr_pin);
   int rate = light_level/105;
+  rate=random(0, 2);
   myservo.write(j);
   if (dir > 0) {
     j += dir*rate;
@@ -132,8 +133,36 @@ void make_random_sound() {
   } else {
     delay(10);
   }
-  if (random(100) < 1 &&
+  if (random(100) < 1000 &&
   millis() - last_sound_toggle > 5) {
+    sound_on = !sound_on;
+    last_sound_toggle = millis();
+  }
+}
+
+void make_random_note() {
+  static int i;
+  static int j = 0;
+  static int sound_on = 0;
+  static unsigned long last_sound_toggle;
+  static unsigned long last_note_change;
+  if (sound_on) {
+    make_tone(scale[j], 0.01);
+    if (millis() - last_note_change > 1000) {
+      i += 1;
+      i %= SCALE;
+      j += random(-4, 4);
+      if (j < 0) {
+        j = 0;
+      } else if (j > SCALE - 1) {
+        j = SCALE - 1;
+      }
+      last_note_change = millis();
+    }
+  } else {
+    delay(10);
+  }
+  if (random(100) < 1000 && millis() - last_sound_toggle > 5) {
     sound_on = !sound_on;
     last_sound_toggle = millis();
   }
@@ -143,5 +172,6 @@ void loop()
 {
   do_servo_action();
   do_led_action();
-  make_random_sound();
+  //make_random_sound();
+  make_random_note();
 }
