@@ -11,7 +11,8 @@
 
 #include <Servo.h> 
 
-const int ldr_pin = A0;
+const int ldr_1_pin = A0;
+const int ldr_2_pin = A1;
 const int led_pin = 3;
 const int servo_pin = 9;
 const int speaker_pin = 10;               
@@ -57,13 +58,22 @@ int scale[SCALE] = {hz1, dl1, dc1, jz1, gx1, zl1, rb1, lz1, yz1, nl1, wy1, yz2};
 Servo myservo;  // create servo object to control a servo 
 
  
-void setup() 
-{ 
+void setup() { 
   pinMode(led_pin, OUTPUT);
   pinMode(speaker_pin, OUTPUT);
   myservo.attach(servo_pin); 
   Serial.begin(9600);
 } 
+
+int front_light_level;
+int reference_light_level;
+int estimated_light_level;
+
+void read_sensors() {
+  front_light_level = analogRead(ldr_1_pin);
+  reference_light_level = analogRead(ldr_2_pin);
+  estimated_light_level = front_light_level - reference_light_level;
+}
 
 void make_tone(float f, float len) {
   float period = one_second / f;
@@ -85,9 +95,19 @@ void do_servo_action () {
   static int j = 0;
   static int j_last;
   static int dir = 1;
-  int light_level = analogRead(ldr_pin);
-  float rate = pow(light_level, 1.414)/2000.0;
-  Serial.println(light_level); Serial.print(" "); Serial.println(sqrt(light_level));
+  int light_level = estimated_light_level;
+  if (light_level < 0) { // in case the box is lying sideways
+    light_level = -light_level;
+  }
+  float rate = pow(light_level, 1.618)/2000.0;
+  Serial.print(front_light_level);
+  Serial.print(" ");
+  Serial.print(reference_light_level);
+  Serial.print(" -> ");
+  Serial.print(light_level);
+  Serial.print(" -> ");
+  Serial.print(rate);
+  Serial.println("");
   j = int(j0);
   if (j != j_last) {
     myservo.write(j);
@@ -149,25 +169,14 @@ void make_random_sound() {
   }
 }
 
-void make_random_note() {
+void make_sound() {
   static int i;
   static int j = 0;
   static int sound_on = 0;
   static unsigned long last_sound_toggle;
-  static unsigned long last_note_change;
   if (sound_on) {
-    make_tone(scale[j], 0.01);
-    if (millis() - last_note_change > 1000) {
-      i += 1;
-      i %= SCALE;
-      j += random(-4, 4);
-      if (j < 0) {
-        j = 0;
-      } else if (j > SCALE - 1) {
-        j = SCALE - 1;
-      }
-      last_note_change = millis();
-    }
+    make_tone(front_light_level, 0.005);
+    make_tone(reference_light_level, 0.005);
   } else {
     delay(10);
   }
@@ -177,10 +186,9 @@ void make_random_note() {
   }
 }
 
-void loop() 
-{
+void loop() {
+  read_sensors();
   do_servo_action();
   do_led_action();
-  //make_random_sound();
-  //make_random_note();
+  make_sound();
 }
