@@ -73,10 +73,41 @@ int front_light_level;
 int reference_light_level;
 int estimated_light_level;
 
+const int LIGHT_LEVEL_HISTORY = 300;
+int light_level_history[LIGHT_LEVEL_HISTORY];
+int actual_history_size = 0;
+int average_light_level_5s;
+int average_light_level_60s;
+int average_light_level_300s;
+
 void read_sensors() {
   front_light_level = analogRead(ldr_1_pin);
   reference_light_level = analogRead(ldr_2_pin);
   estimated_light_level = front_light_level - reference_light_level;
+  
+  static unsigned long second_start;
+  static int fractional_total = 0;
+  static float fractional_readings = 0;
+  unsigned long t = millis();
+  if (!second_start || t >= second_start + 1000) {
+    if (actual_history_size >= LIGHT_LEVEL_HISTORY) {
+      for (int i = 1; i < LIGHT_LEVEL_HISTORY; i += 1) {
+        light_level_history[i - 1] = light_level_history[i];
+      } /* for */
+      actual_history_size -= 1;
+    } /* if */
+    int fractional_average = fractional_readings? int(fractional_readings/fractional_total + 0.5): front_light_level;
+    light_level_history[actual_history_size] = fractional_average;
+    if (!second_start) {
+      second_start = t;
+    } else {
+      second_start += 1000;
+    } /* if */
+    fractional_readings = 0;
+  } else {
+    fractional_readings += 1;
+    fractional_total += front_light_level;
+  }
 }
 
 void make_tone(float f, float len) {
