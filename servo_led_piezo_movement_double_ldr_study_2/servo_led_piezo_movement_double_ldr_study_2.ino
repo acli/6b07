@@ -13,7 +13,9 @@
 
 const int ldr_1_pin = A0;
 const int ldr_2_pin = A1;
-const int led_pin = 3;
+const int led_1_pin = 3;
+const int led_2_pin = 4;
+const int led_3_pin = 5;
 const int servo_pin = 9;
 const int speaker_pin = 10;               
 
@@ -59,7 +61,9 @@ Servo myservo;  // create servo object to control a servo
 
  
 void setup() { 
-  pinMode(led_pin, OUTPUT);
+  pinMode(led_1_pin, OUTPUT);
+  pinMode(led_2_pin, OUTPUT);
+  pinMode(led_3_pin, OUTPUT);
   pinMode(speaker_pin, OUTPUT);
   myservo.attach(servo_pin); 
   Serial.begin(9600);
@@ -129,19 +133,13 @@ void do_servo_action () {
 }
 
 void do_led_action () {
-  const int countdown_initial = 5;
-  static int countdown;
-  countdown -= 1;
-  if (countdown <= 0) {
-    static int lighting_level = 128;
-    lighting_level += random(-4, 8);
-    if (lighting_level < 0) {
-      lighting_level = 0;
-    } else if (lighting_level > 255) {
-      lighting_level = 255;
-    }
-    analogWrite(led_pin, lighting_level);
-    countdown = countdown_initial;
+  static unsigned long last_blinked;
+  unsigned long t = millis();
+  if (t - last_blinked > 1000) {
+    digitalWrite(led_1_pin, random(2));
+    digitalWrite(led_2_pin, random(2));
+    digitalWrite(led_3_pin, random(2));
+    last_blinked = t;
   }
 }
 
@@ -190,5 +188,5 @@ void loop() {
   read_sensors();
   do_servo_action();
   do_led_action();
-  make_sound();
+  //make_sound();
 }
