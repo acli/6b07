@@ -18,11 +18,11 @@ const int led_2_pin = 4;
 const int led_3_pin = 5;
 const int led_4_pin = 6;
 const int led_5_pin = 7;
-const int servo_pin = 9;
-const int speaker_pin = 10;               
+const int servo_pin = 12;
+const int speaker_pin = 9; // required by Mozzi, but VOLTAGES ARE DIFFERENT!!!              
 
-const int servo_low = 0;
-const int servo_high = 80;
+const int servo_low = 30;
+const int servo_high = 120;
 
 const float one_second = 1000000.0;
 float tempo = 60.0;
@@ -92,7 +92,7 @@ void read_sensors() {
   reference_light_level = analogRead(ldr_2_pin);
   float ref1 = average_light_level_5s;
   float ref2 = average_light_level_60s;
-  const float ref1_weight = 0.75;
+  const float ref1_weight = 0.62;
   estimated_light_level = (ref1? front_light_level - ref1: 0) * ref1_weight
                         + (ref2? front_light_level - ref2: 0) * (1.0 - ref1_weight);
   
